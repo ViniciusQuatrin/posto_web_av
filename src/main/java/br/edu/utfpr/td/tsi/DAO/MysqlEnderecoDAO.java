@@ -1,9 +1,7 @@
 package br.edu.utfpr.td.tsi.DAO;
 
-import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,22 +10,48 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import br.edu.utfpr.td.tsi.MODELO.Bairro;
+import br.edu.utfpr.td.tsi.MODELO.Endereco;
 
 @Component
-public class MysqlBairroDAO implements BairroDAO {
-    
+public class MysqlEnderecoDAO implements EnderecoDAO {
+
     @Autowired
     private DataSource dataSource;
 
     @Override
-    public void inserir(Bairro bairro) {
-        String sql = "INSERT INTO bairro (nome) VALUES (?)";
+    public void inserir(Endereco endereco, String idPaciente) {
+        String sql = "INSERT INTO endereco (logradoura, numero, cep, idBairro, idPaciente) VALUES (?, ?, ?, ?, ?)";
         try {
             Connection conn = dataSource.getConnection();
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
 
-            preparedStatement.setString(1, bairro.getNome());
+            preparedStatement.setString(1, endereco.getLogradouro());
+            preparedStatement.setString(2, endereco.getNumero());
+            preparedStatement.setString(3, endereco.getCep());
+            preparedStatement.setLong(4, endereco.getBairro().getId());
+            preparedStatement.setString(5, idPaciente);
+            preparedStatement.executeUpdate();
+
+            conn.close();
+            preparedStatement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    
+    }
+
+    @Override
+    public void atualizar(String idPaciente, Endereco endereco) {
+        String sql = "UPDATE endereco SET logradouro = ?, numero = ?, cep = ?, idBairro = ? WHERE idPaciente = ?";
+        try {
+            Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+
+            preparedStatement.setString(1, endereco.getLogradouro());
+            preparedStatement.setString(2, endereco.getNumero());
+            preparedStatement.setString(3, endereco.getCep());
+            preparedStatement.setLong(4, endereco.getBairro().getId());
+            preparedStatement.setString(5, idPaciente);
             preparedStatement.executeUpdate();
 
             conn.close();
@@ -38,31 +62,13 @@ public class MysqlBairroDAO implements BairroDAO {
     }
 
     @Override
-    public void atualizar(Long id, Bairro bairro) {
-        String sql = "UPDATE bairro SET nome = ? WHERE idBairro = ?";
+    public void remover(String idPaciente) {
+        String sql = "DELETE FROM endereco WHERE idPaciente = ?";
         try {
             Connection conn = dataSource.getConnection();
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
 
-            preparedStatement.setString(1, bairro.getNome());
-            preparedStatement.setLong(2, id);
-            preparedStatement.executeUpdate();
-
-            conn.close();
-            preparedStatement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-    }
-}
-
-    @Override
-    public void remover(Long id) {
-        String sql = "DELETE FROM bairro WHERE idBairro = ?";
-        try {
-            Connection conn = dataSource.getConnection();
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
-
-            preparedStatement.setLong(1, id);
+            preparedStatement.setString(1, idPaciente);
             preparedStatement.executeUpdate();
 
             conn.close();
@@ -73,44 +79,38 @@ public class MysqlBairroDAO implements BairroDAO {
     }
 
     @Override
-    public List<Bairro> listarTodos() {
-        ArrayList<Bairro> bairros = new ArrayList<>();
+    public List<Endereco> listarTodos() {
+       ArrayList<Endereco> enderecos = new ArrayList<>();
         try {
             Connection conn = dataSource.getConnection();
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT idBairro, nome FROM bairro");
-            while(resultSet.next()) {
-                Long id = resultSet.getLong(1);
-                String nome = resultSet.getString(2);
-                bairros.add(new Bairro(id, nome));
-            }
-            conn.close();
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return bairros;
+            PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM endereco");
+            preparedStatement.executeQuery();
 
-    }
-
-    @Override
-    public Bairro procurar(Long id) {
-        String sql = "SELECT * FROM bairro WHERE idBairro = ?";
-        try {
-            Connection conn = dataSource.getConnection();
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
-
-            preparedStatement.setLong(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()) {
-                String nome = resultSet.getString(2);
-                return new Bairro(id, nome);
-            }
             conn.close();
             preparedStatement.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        return enderecos;
+    }
+
+    @Override
+    public Endereco procurar(String idPaciente) {
+        String sql = "SELECT * FROM endereco WHERE idPaciente = ?";
+        try {
+            Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+
+            preparedStatement.setString(1, idPaciente);
+            preparedStatement.executeQuery();
+
+            conn.close();
+            preparedStatement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+
         }
         return null;
     }
+    
 }
