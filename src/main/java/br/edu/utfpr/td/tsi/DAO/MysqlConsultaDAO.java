@@ -1,33 +1,31 @@
 package br.edu.utfpr.td.tsi.DAO;
 
-import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import br.edu.utfpr.td.tsi.MODELO.Bairro;
+import br.edu.utfpr.td.tsi.MODELO.Consulta;
 
-@Component
-public class MysqlBairroDAO implements BairroDAO {
-    
+public class MysqlConsultaDAO implements ConsultaDAO {
+
     @Autowired
     private DataSource dataSource;
 
     @Override
-    public void inserir(Bairro bairro) {
-        String sql = "INSERT INTO bairro (nome) VALUES (?)";
+    public void inserir(Consulta consulta, String idPaciente) {
+        String sql = "INSERT INTO consulta (data_hora, idSituacao, idPaciente) VALUES (?, ?, ?)";
         try {
             Connection conn = dataSource.getConnection();
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
 
-            preparedStatement.setString(1, bairro.getNome());
+            preparedStatement.setString(1, consulta.getData_hora());
+            preparedStatement.setString(2, consulta.getIdSituacao());
+            preparedStatement.setString(3, idPaciente);
             preparedStatement.executeUpdate();
 
             conn.close();
@@ -35,34 +33,19 @@ public class MysqlBairroDAO implements BairroDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
     }
 
     @Override
-    public void atualizar(Long id, Bairro bairro) {
-        String sql = "UPDATE bairro SET nome = ? WHERE idBairro = ?";
+    public void atualizar(String idPaciente, Consulta consulta) {
+        String sql = "UPDATE consulta SET data_hora = ?, idSituacao = ? WHERE idPaciente = ?";
         try {
             Connection conn = dataSource.getConnection();
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
 
-            preparedStatement.setString(1, bairro.getNome());
-            preparedStatement.setLong(2, id);
-            preparedStatement.executeUpdate();
-
-            conn.close();
-            preparedStatement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-    }
-}
-
-    @Override
-    public void remover(Long id) {
-        String sql = "DELETE FROM bairro WHERE idBairro = ?";
-        try {
-            Connection conn = dataSource.getConnection();
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
-
-            preparedStatement.setLong(1, id);
+            preparedStatement.setString(1, consulta.getData_hora());
+            preparedStatement.setString(2, consulta.getIdSituacao());
+            preparedStatement.setString(3, idPaciente);
             preparedStatement.executeUpdate();
 
             conn.close();
@@ -70,42 +53,52 @@ public class MysqlBairroDAO implements BairroDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
     }
 
     @Override
-    public List<Bairro> listarTodos() {
-        ArrayList<Bairro> bairros = new ArrayList<>();
-        try {
-            Connection conn = dataSource.getConnection();
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT idBairro, nome FROM bairro");
-            while(resultSet.next()) {
-                Long id = resultSet.getLong(1);
-                String nome = resultSet.getString(2);
-                bairros.add(new Bairro(id, nome));
-            }
-            conn.close();
-            statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return bairros;
-
-    }
-
-    @Override
-    public Bairro procurar(Long id) {
-        String sql = "SELECT * FROM bairro WHERE idBairro = ?";
+    public void remover(String idPaciente) {
+        String sql = "DELETE FROM consulta WHERE idPaciente = ?";
         try {
             Connection conn = dataSource.getConnection();
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
 
-            preparedStatement.setLong(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()) {
-                String nome = resultSet.getString(2);
-                return new Bairro(id, nome);
-            }
+            preparedStatement.setString(1, idPaciente);
+            preparedStatement.executeUpdate();
+
+            conn.close();
+            preparedStatement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        
+    }
+
+    @Override
+    public List<Consulta> listarTodos() {
+        ArrayList<Consulta> consultas = new ArrayList<>();
+        try {
+            Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM consulta");
+            preparedStatement.executeQuery();
+
+            conn.close();
+            preparedStatement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return consultas;
+    }
+
+    @Override
+    public Consulta procurar(String idPaciente) {
+        String sql = "SELECT * FROM consulta WHERE idPaciente = ?";
+        try {
+            Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+
+            preparedStatement.setString(1, idPaciente);
+            preparedStatement.executeQuery();
+
             conn.close();
             preparedStatement.close();
         } catch (Exception e) {
@@ -113,4 +106,5 @@ public class MysqlBairroDAO implements BairroDAO {
         }
         return null;
     }
+    
 }

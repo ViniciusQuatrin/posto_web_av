@@ -11,6 +11,8 @@ public class Paciente {
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate dataNascimento;
 	private Endereco endereco;
+	private Consulta consulta;
+
 
 	public Paciente() {
 	}
@@ -62,4 +64,13 @@ public class Paciente {
 	public void setEndereco(Endereco endereco) {
 		this.endereco = endereco;
 	}
+
+	public Consulta getConsulta() {
+		return consulta;
+	}
+
+	public void setConsulta(Consulta consulta) {
+		this.consulta = consulta;
+	}
+
 }
